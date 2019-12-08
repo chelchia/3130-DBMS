@@ -1117,32 +1117,32 @@ typedef struct HashJoinState
 	JoinState	js;				/* its first field is NodeTag */
 	List	   *hashclauses;	/* list of ExprState nodes */
 
-	HashJoinTable hj_Inner_HashTable;
+	// Modified for 3130
+	HashJoinTable hj_Inner_HashTable;	//was hj_HashTable
 	uint32		hj_Inner_CurHashValue;
 	int			hj_Inner_CurBucketNo;
 	HashJoinTuple hj_Inner_CurTuple;
 
-	HashJoinTable hj_Outer_HashTable;
-	uint32		hj_Outer_CurHashValue;
-	int			hj_Outer_CurBucketNo;
-	HashJoinTuple hj_Outer_CurTuple;
-
 	List	   *hj_OuterHashKeys;		/* list of ExprState nodes */
 	List	   *hj_InnerHashKeys;		/* list of ExprState nodes */
 	List	   *hj_HashOperators;		/* list of operator OIDs */
-	
 	TupleTableSlot *hj_OuterTupleSlot;
-	TupleTableSlot *hj_HashTupleSlot;
+	TupleTableSlot *hj_InnerHashTupleSlot;	// was hj_HashTupleSlot
 	TupleTableSlot *hj_NullInnerTupleSlot;
 	TupleTableSlot *hj_FirstOuterTupleSlot;
 	bool		hj_NeedNewOuter;
 	bool		hj_MatchedOuter;
 	bool		hj_OuterNotEmpty;
 
-	// Added by Chelsea
+	// Added for 3130
+	HashJoinTable hj_Outer_HashTable;
+	uint32		hj_Outer_CurHashValue;
+	int			hj_Outer_CurBucketNo;
+	HashJoinTuple hj_Outer_CurTuple;
+
 	bool		probingOuter;
 	TupleTableSlot *hj_InnerTupleSlot;
-	// TupleTableSlot *hj_HashTupleSlot; //??????
+	TupleTableSlot *hj_OuterHashTupleSlot; 
 	TupleTableSlot *hj_NullOuterTupleSlot;
 	TupleTableSlot *hj_FirstInnerTupleSlot;
 	bool		hj_NeedNewInner;
