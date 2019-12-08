@@ -771,7 +771,7 @@ typedef struct PlanState
 	 * Other run-time state needed by most if not all node types.
 	 */
 	TupleTableSlot *ps_OuterTupleSlot;	/* slot for current "outer" tuple */
-	TupleTableSlot *ps_InnerTupleSlot;	/* CSI3530 / CSI3130 -slot for current "INNER" tuple */
+										/* CSI3530 / CSI3130 -slot for current "INNER" tuple */
 	TupleTableSlot *ps_ResultTupleSlot; /* slot for my result tuples */
 	ExprContext *ps_ExprContext;	/* node's expression-evaluation context */
 	ProjectionInfo *ps_ProjInfo;	/* info for doing tuple projection */
@@ -1116,40 +1116,20 @@ typedef struct HashJoinState
 {
 	JoinState	js;				/* its first field is NodeTag */
 	List	   *hashclauses;	/* list of ExprState nodes */
-
-	// Modified for 3130
-	HashJoinTable hj_Inner_HashTable;	// was hj_HashTable			
-	uint32		hj_Outer_CurHashValue;	// was hj_CurHashValue		hash value for the current outer tuple
-	int			hj_Inner_CurBucketNo;	// was hj_CurBucketNo (c calls it outer)		the inner table's hash bucket that matches the outer tuple
-	HashJoinTuple hj_Inner_CurTuple;	// was hj_CurTuple			the last inner tuple that matches the outer tuple
-
+	HashJoinTable hj_HashTable;
+	uint32		hj_CurHashValue;
+	int			hj_CurBucketNo;
+	HashJoinTuple hj_CurTuple;
 	List	   *hj_OuterHashKeys;		/* list of ExprState nodes */
 	List	   *hj_InnerHashKeys;		/* list of ExprState nodes */
 	List	   *hj_HashOperators;		/* list of operator OIDs */
 	TupleTableSlot *hj_OuterTupleSlot;
-	TupleTableSlot *hj_InnerHashTupleSlot;	// was hj_HashTupleSlot
+	TupleTableSlot *hj_HashTupleSlot;
 	TupleTableSlot *hj_NullInnerTupleSlot;
 	TupleTableSlot *hj_FirstOuterTupleSlot;
 	bool		hj_NeedNewOuter;
 	bool		hj_MatchedOuter;
 	bool		hj_OuterNotEmpty;
-
-	// Added for 3130
-	HashJoinTable hj_Outer_HashTable;
-	uint32		hj_Inner_CurHashValue;
-	int			hj_Outer_CurBucketNo;
-	HashJoinTuple hj_Outer_CurTuple;
-
-	bool		probingOuter;
-	TupleTableSlot *hj_InnerTupleSlot;
-	TupleTableSlot *hj_OuterHashTupleSlot; 
-	TupleTableSlot *hj_NullOuterTupleSlot;
-	TupleTableSlot *hj_FirstInnerTupleSlot;
-	bool		hj_NeedNewInner;
-	bool		hj_MatchedInner;
-	bool		hj_InnerNotEmpty;
-
-
 } HashJoinState;
 
 
