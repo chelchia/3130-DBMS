@@ -1118,10 +1118,10 @@ typedef struct HashJoinState
 	List	   *hashclauses;	/* list of ExprState nodes */
 
 	// Modified for 3130
-	HashJoinTable hj_Inner_HashTable;	// was hj_HashTable
-	uint32		hj_Outer_CurHashValue;	// was hj_CurHashValue
-	int			hj_Outer_CurBucketNo;	// was hj_CurBucketNo
-	HashJoinTuple hj_Inner_CurTuple;	// was hj_CurTuple
+	HashJoinTable hj_Inner_HashTable;	// was hj_HashTable			
+	uint32		hj_Outer_CurHashValue;	// was hj_CurHashValue		hash value for the current outer tuple
+	int			hj_Inner_CurBucketNo;	// was hj_CurBucketNo (c calls it outer)		the inner table's hash bucket that matches the outer tuple
+	HashJoinTuple hj_Inner_CurTuple;	// was hj_CurTuple			the last inner tuple that matches the outer tuple
 
 	List	   *hj_OuterHashKeys;		/* list of ExprState nodes */
 	List	   *hj_InnerHashKeys;		/* list of ExprState nodes */
@@ -1137,7 +1137,7 @@ typedef struct HashJoinState
 	// Added for 3130
 	HashJoinTable hj_Outer_HashTable;
 	uint32		hj_Inner_CurHashValue;
-	int			hj_Inner_CurBucketNo;
+	int			hj_Outer_CurBucketNo;
 	HashJoinTuple hj_Outer_CurTuple;
 
 	bool		probingOuter;
