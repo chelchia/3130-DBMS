@@ -1118,10 +1118,10 @@ typedef struct HashJoinState
 	List	   *hashclauses;	/* list of ExprState nodes */
 
 	// Modified for 3130
-	HashJoinTable hj_Inner_HashTable;	//was hj_HashTable
-	uint32		hj_Inner_CurHashValue;
-	int			hj_Inner_CurBucketNo;
-	HashJoinTuple hj_Inner_CurTuple;
+	HashJoinTable hj_Inner_HashTable;	// was hj_HashTable
+	uint32		hj_Outer_CurHashValue;	// was hj_CurHashValue
+	int			hj_Outer_CurBucketNo;	// was hj_CurBucketNo
+	HashJoinTuple hj_Inner_CurTuple;	// was hj_CurTuple
 
 	List	   *hj_OuterHashKeys;		/* list of ExprState nodes */
 	List	   *hj_InnerHashKeys;		/* list of ExprState nodes */
@@ -1136,8 +1136,8 @@ typedef struct HashJoinState
 
 	// Added for 3130
 	HashJoinTable hj_Outer_HashTable;
-	uint32		hj_Outer_CurHashValue;
-	int			hj_Outer_CurBucketNo;
+	uint32		hj_Inner_CurHashValue;
+	int			hj_Inner_CurBucketNo;
 	HashJoinTuple hj_Outer_CurTuple;
 
 	bool		probingOuter;
