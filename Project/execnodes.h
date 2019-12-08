@@ -771,7 +771,7 @@ typedef struct PlanState
 	 * Other run-time state needed by most if not all node types.
 	 */
 	TupleTableSlot *ps_OuterTupleSlot;	/* slot for current "outer" tuple */
-										/* CSI3530 / CSI3130 -slot for current "INNER" tuple */
+	TupleTableSlot *ps_InnerTupleSlot;	/* CSI3530 / CSI3130 -slot for current "INNER" tuple */
 	TupleTableSlot *ps_ResultTupleSlot; /* slot for my result tuples */
 	ExprContext *ps_ExprContext;	/* node's expression-evaluation context */
 	ProjectionInfo *ps_ProjInfo;	/* info for doing tuple projection */
@@ -1116,13 +1116,21 @@ typedef struct HashJoinState
 {
 	JoinState	js;				/* its first field is NodeTag */
 	List	   *hashclauses;	/* list of ExprState nodes */
-	HashJoinTable hj_HashTable;
-	uint32		hj_CurHashValue;
-	int			hj_CurBucketNo;
-	HashJoinTuple hj_CurTuple;
+
+	HashJoinTable hj_Inner_HashTable;
+	uint32		hj_Inner_CurHashValue;
+	int			hj_Inner_CurBucketNo;
+	HashJoinTuple hj_Inner_CurTuple;
+
+	HashJoinTable hj_Outer_HashTable;
+	uint32		hj_Outer_CurHashValue;
+	int			hj_Outer_CurBucketNo;
+	HashJoinTuple hj_Outer_CurTuple;
+
 	List	   *hj_OuterHashKeys;		/* list of ExprState nodes */
 	List	   *hj_InnerHashKeys;		/* list of ExprState nodes */
 	List	   *hj_HashOperators;		/* list of operator OIDs */
+	
 	TupleTableSlot *hj_OuterTupleSlot;
 	TupleTableSlot *hj_HashTupleSlot;
 	TupleTableSlot *hj_NullInnerTupleSlot;
@@ -1130,6 +1138,18 @@ typedef struct HashJoinState
 	bool		hj_NeedNewOuter;
 	bool		hj_MatchedOuter;
 	bool		hj_OuterNotEmpty;
+
+	// Added by Chelsea
+	bool		probingOuter;
+	TupleTableSlot *hj_InnerTupleSlot;
+	// TupleTableSlot *hj_HashTupleSlot; //??????
+	TupleTableSlot *hj_NullOuterTupleSlot;
+	TupleTableSlot *hj_FirstInnerTupleSlot;
+	bool		hj_NeedNewInner;
+	bool		hj_MatchedInner;
+	bool		hj_InnerNotEmpty;
+
+
 } HashJoinState;
 
 
