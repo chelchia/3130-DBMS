@@ -803,7 +803,7 @@ ExecHashGetBucketAndBatch(HashJoinTable hashtable,
  */
 
 //CSI3130:
-HeapTuple
+HashTuple
 ExecScanHashBucket(HashJoinState *hjstate,
 				   ExprContext *econtext)
 {	

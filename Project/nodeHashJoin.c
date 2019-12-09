@@ -58,7 +58,7 @@ ExecHashJoin(HashJoinState *node)
 	ExprDoneCond isDone;
 	HashJoinTable outerHashTable; //CSI3130
 	HashJoinTable innerHashTable; //CSI3130
-	HeapTuple	curtuple;
+	HashTuple	curtuple; //CSI3130
 	TupleTableSlot *outerTupleSlot;
 	TupleTableSlot *innerTupleSlot; //CSI3130
     // CSI3530 il faut un innerTupleSlot aussi //CSI3130 You need an innerTupleSlot too
