@@ -58,28 +58,40 @@ ExecHash(HashState *node)
     ExprContext *econtext;
     uint32 val;
 
-    if (node->ps.instrument){ //Instrumentation
+	/* must provide our own instrumentation support */
+    if (node->ps.instrument){
         InstrStartNode(node->ps.instrument);
     }
 
-    outerNode = outerPlanState(node); //Node's StateInfo
+	/*
+	 * get state info from node
+	 */
+    outerNode = outerPlanState(node);
     hashtable = node->hashtable;
 
-    hashkeys = node->hashkeys; //Expression contextt
+	/*
+	 * set expression context
+	 */
+    hashkeys = node->hashkeys;
     econtext = node->ps.ps_ExprContext;
 
-    slot = ExecProcNode(outerNode); //Get all tuples, insert into table
+	/*
+	 * get all inner tuples and insert into the hash table
+	 */
+	for (;;)
+	{
+		slot = ExecProcNode(outerNode); //Get all tuples, insert into table
+		if (TupIsNull(slot))
+			return NULL;
+		hashtable->totalTuples += 1;
+		/* We have to compute the hash value */
+		econtext->ecxt_innertuple = slot;
+		econtext->ecxt_outertuple = slot;
+		hashvalue = ExecHashGetHashValue(hashtable, econtext, hashkeys);
+		ExecHashTableInsert(hashtable, ExecFetchSlotTuple(slot), hashvalue);
+	}
 
-
-    if(TupIsNull(slot))
-        return NULL;
-
-    hashtable->totalTuples += 1; //Compute hash val
-    econtext->ecxt_innertuple = slot;
-    econtext->ecxt_outertuple = slot;
-    val = ExecHashGetHashValue(hashtable, econtext, hashkeys);
-    ExecHashTableInsert(hashtable, ExecFetchSlotTuple(slot), val);
-
+	/* must provide our own instrumentation support */
     if (node->ps.instrument)
         InstrStopNodeMulti(node->ps.instrument, hashtable->totalTuples);
 
@@ -287,7 +299,7 @@ ExecHashTableCreate(Hash *node, List *hashOperators)
 	hashtable->curbatch = 0;
 	hashtable->nbatch_original = nbatch;
 	hashtable->nbatch_outstart = nbatch;
-	hashtable->growEnabled = false; //CSI3130
+	hashtable->growEnabled = false; //CSI3130:
 	hashtable->totalTuples = 0;
 	hashtable->innerBatchFile = NULL;
 	hashtable->outerBatchFile = NULL;
@@ -790,12 +802,12 @@ ExecHashGetBucketAndBatch(HashJoinTable hashtable,
  * The current outer tuple must be stored in econtext->ecxt_outertuple.
  */
 
-//CSI3130
+//CSI3130:
 HeapTuple
 ExecScanHashBucket(HashJoinState *hjstate,
 				   ExprContext *econtext)
 {	
-	if (hjstate->hj_FetchedIn) //CSI3130 Inner table
+	if (hjstate->hj_FetchedIn) //CSI3130: Inner table
 	{ 
 		List	   *hjclauses = hjstate->hashclauses;
 		HashJoinTable hashtable = hjstate->hj_Outer_HashTable;
@@ -835,12 +847,11 @@ ExecScanHashBucket(HashJoinState *hjstate,
 				hashTuple = hashTuple->next;
 			}
 		}
-		return NULL;
 	} else // Outer Table
 	{ 
-        List *hjclauses = hjstate->hashclauses; //cSI3130
-        HashJoinTable hashtable = hjstate->hj_Inner_HashTable; //CSI3130
-        HashJoinTuple hashTuple = hjstate->hj_Inner_CurTuple; //cSI3130
+        List *hjclauses = hjstate->hashclauses; //cSI3130:
+        HashJoinTable hashtable = hjstate->hj_Inner_HashTable; //CSI3130:
+        HashJoinTuple hashTuple = hjstate->hj_Inner_CurTuple; //cSI3130:
         uint32 hashvalue = hjstate->hj_Outer_CurHashValue;
 
 
@@ -855,7 +866,7 @@ ExecScanHashBucket(HashJoinState *hjstate,
                 TupleTableSlot *inntuple;
 
                 inntuple = ExecStoreTuple(heapTuple,
-                                          hjstate->hj_InHashTupleSlot, //CSI3130
+                                          hjstate->hj_InHashTupleSlot, //CSI3130:
                                           InvalidBuffer,
                                           false);    /* do not pfree */
                 econtext->ecxt_innertuple = inntuple;
@@ -872,6 +883,7 @@ ExecScanHashBucket(HashJoinState *hjstate,
             }
         }
     }
+	return NULL;
 }
 //end of CSI3130 changes
 
