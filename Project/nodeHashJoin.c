@@ -327,7 +327,7 @@ ExecHashJoin(HashJoinState *node)
                         break;
                     }
 
-                    inntuple = ExecStoreTuple(curtuple, node->hj_InTupleSlot, InvalidBuffer, false); //Dont free the tuple
+                    inntuple = ExecStoreTuple(curtuple, node->hj_InnerTupleSlot, InvalidBuffer, false); //Dont free the tuple
                     econtext->ecxt_innertuple = inntuple;
                     ResetExprContext(econtext);
 
