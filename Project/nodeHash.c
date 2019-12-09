@@ -762,6 +762,7 @@ HeapTuple
 ExecScanHashBucket(HashJoinState *hjstate,
 				   ExprContext *econtext)
 {
+	//CSI3130:
 	List	   *hjclauses = hjstate->hashclauses;
 	HashJoinTable hashtable = hjstate->hj_Inner_HashTable;
 	HashJoinTuple hashTuple = hjstate->hj_Inner_CurTuple;
@@ -771,6 +772,7 @@ ExecScanHashBucket(HashJoinState *hjstate,
 	 * hj_Inner_CurTuple is NULL to start scanning a new bucket, or the address of
 	 * the last tuple returned from the current bucket.
 	 */
+	// CSI3130:
 	if (hashTuple == NULL)
 		hashTuple = hashtable->buckets[hjstate->hj_Inner_CurBucketNo];
 	else
@@ -784,6 +786,7 @@ ExecScanHashBucket(HashJoinState *hjstate,
 			TupleTableSlot *inntuple;
 
 			/* insert hashtable's tuple into exec slot so ExecQual sees it */
+			// CSI3130:
 			inntuple = ExecStoreTuple(heapTuple,
 									  hjstate->hj_InnerHashTupleSlot,
 									  InvalidBuffer,
@@ -795,6 +798,7 @@ ExecScanHashBucket(HashJoinState *hjstate,
 
 			if (ExecQual(hjclauses, econtext, false))
 			{
+				// CSI3130:
 				hjstate->hj_Inner_CurTuple = hashTuple;
 				return heapTuple;
 			}
