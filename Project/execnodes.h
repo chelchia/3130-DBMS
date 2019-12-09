@@ -1117,24 +1117,25 @@ typedef struct HashJoinState
 	JoinState	js;				/* its first field is NodeTag */
 	List	   *hashclauses;	/* list of ExprState nodes */
 
-	// Modified for 3130
-	HashJoinTable hj_Inner_HashTable;	// was hj_HashTable			
-	uint32		hj_Outer_CurHashValue;	// was hj_CurHashValue		hash value for the current outer tuple
-	int			hj_Inner_CurBucketNo;	// was hj_CurBucketNo (c calls it outer)		the inner table's hash bucket that matches the outer tuple
-	HashJoinTuple hj_Inner_CurTuple;	// was hj_CurTuple			the last inner tuple that matches the outer tuple
+	// CSI3130: Modified field names
+	HashJoinTable hj_Inner_HashTable;	// CSI3130: was hj_HashTable			
+	uint32		hj_Outer_CurHashValue;	// CSI3130: was hj_CurHashValue		hash value for the current outer tuple
+	int			hj_Inner_CurBucketNo;	// CSI3130: was hj_CurBucketNo (c calls it outer)		the inner table's hash bucket that matches the outer tuple
+	HashJoinTuple hj_Inner_CurTuple;	// CSI3130: was hj_CurTuple			the last inner tuple that matches the outer tuple
 
 	List	   *hj_OuterHashKeys;		/* list of ExprState nodes */
 	List	   *hj_InnerHashKeys;		/* list of ExprState nodes */
 	List	   *hj_HashOperators;		/* list of operator OIDs */
 	TupleTableSlot *hj_OuterTupleSlot;
-	TupleTableSlot *hj_InnerHashTupleSlot;	// was hj_HashTupleSlot
+	TupleTableSlot *hj_InnerHashTupleSlot;	// CSI3130: was hj_HashTupleSlot
 	TupleTableSlot *hj_NullInnerTupleSlot;
 	TupleTableSlot *hj_FirstOuterTupleSlot;
 	bool		hj_NeedNewOuter;
 	bool		hj_MatchedOuter;
 	bool		hj_OuterNotEmpty;
 
-	// CSI3130: Added for 3130
+	// CSI3130: Added for 3130 Added new fields
+
 	HashJoinTable hj_Outer_HashTable;
 	uint32		hj_Inner_CurHashValue;
 	int			hj_Outer_CurBucketNo;
@@ -1153,7 +1154,6 @@ typedef struct HashJoinState
     bool        hj_FetchedIn; //CSI3130
     int         hj_InnerProbing;  //CSI3130
     int         hj_OuterProbing; //CSI3130
-
 
 
 } HashJoinState;
