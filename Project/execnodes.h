@@ -1134,13 +1134,13 @@ typedef struct HashJoinState
 	bool		hj_MatchedOuter;
 	bool		hj_OuterNotEmpty;
 
-	// CSI3130: Added new fields
+	// CSI3130: Added for 3130 Added new fields
+
 	HashJoinTable hj_Outer_HashTable;
 	uint32		hj_Inner_CurHashValue;
 	int			hj_Outer_CurBucketNo;
 	HashJoinTuple hj_Outer_CurTuple;
 
-	bool		probingOuter;
 	TupleTableSlot *hj_InnerTupleSlot;
 	TupleTableSlot *hj_OuterHashTupleSlot; 
 	TupleTableSlot *hj_NullOuterTupleSlot;
@@ -1148,6 +1148,13 @@ typedef struct HashJoinState
 	bool		hj_NeedNewInner;
 	bool		hj_MatchedInner;
 	bool		hj_InnerNotEmpty;
+
+	bool        hj_innerFinished; //CSI3130
+    bool        hj_outerFinished; //cSI3130
+    bool        hj_FetchedIn; //CSI3130
+    int         hj_InnerProbing;  //CSI3130
+    int         hj_OuterProbing; //CSI3130
+
 
 } HashJoinState;
 
