@@ -75,7 +75,8 @@ ExecHashJoin(HashJoinState *node)
 	/*
 	 * get information from HashJoin state
 	 */
-	hashtable = node->hj_HashTable;
+	// CSI3130:
+	hashtable = node->hj_Inner_HashTable;
     // CSI3530 and CSI3130 ...
 	econtext = node->js.ps.ps_ExprContext;
 
@@ -156,7 +157,8 @@ ExecHashJoin(HashJoinState *node)
 		 */
 		hashtable = ExecHashTableCreate((Hash *) hashNode->ps.plan,
 										node->hj_HashOperators);
-		node->hj_HashTable = hashtable;
+		// CSI3130:
+		node->hj_Inner_HashTable = hashtable;
 
 		/*
 		 * execute the Hash node, to build the hash table
@@ -213,10 +215,11 @@ ExecHashJoin(HashJoinState *node)
 			 * now we have an outer tuple, find the corresponding bucket for
 			 * this tuple from the hash table
 			 */
-			node->hj_CurHashValue = hashvalue;
+			// CSI3130:
+			node->hj_Outer_CurHashValue = hashvalue;
 			ExecHashGetBucketAndBatch(hashtable, hashvalue,
-									  &node->hj_CurBucketNo, &batchno);
-			node->hj_CurTuple = NULL;
+									  &node->hj_Inner_CurBucketNo, &batchno);
+			node->hj_Inner_CurTuple = NULL;
 
 			/*
 			 * Now we've got an outer tuple and the corresponding hash bucket,
@@ -249,8 +252,9 @@ ExecHashJoin(HashJoinState *node)
 			/*
 			 * we've got a match, but still need to test non-hashed quals
 			 */
+			// CSI3130:
 			inntuple = ExecStoreTuple(curtuple,
-									  node->hj_HashTupleSlot,
+									  node->hj_InnerHashTupleSlot,
 									  InvalidBuffer,
 									  false);	/* don't pfree this tuple */
 			econtext->ecxt_innertuple = inntuple;
@@ -427,7 +431,8 @@ ExecInitHashJoin(HashJoin *node, EState *estate)
 		HashState  *hashstate = (HashState *) innerPlanState(hjstate);
 		TupleTableSlot *slot = hashstate->ps.ps_ResultTupleSlot;
 
-		hjstate->hj_HashTupleSlot = slot;
+		// CSI3130:
+		hjstate->hj_InnerHashTupleSlot = slot;
 	}
 
 	/*
@@ -443,14 +448,16 @@ ExecInitHashJoin(HashJoin *node, EState *estate)
 	/*
 	 * initialize hash-specific info
 	 */
-	hjstate->hj_HashTable = NULL;
+	// CSI3130:
+	hjstate->hj_Inner_HashTable = NULL;
 	//CSI3530 and CSI3130...
 	hjstate->hj_FirstOuterTupleSlot = NULL;
 
 	//CSI3530 Plein d'initialisations a faire ici // CSI3130 Initialize here
-	hjstate->hj_CurHashValue = 0;
-	hjstate->hj_CurBucketNo = 0;
-	hjstate->hj_CurTuple = NULL;
+	// CSI3130:
+	hjstate->hj_Outer_CurHashValue = 0;
+	hjstate->hj_Inner_CurBucketNo = 0;
+	hjstate->hj_Inner_CurTuple = NULL;
 
 
 	/*
@@ -509,10 +516,11 @@ ExecEndHashJoin(HashJoinState *node)
 	/*
 	 * Free hash table
 	 */
-	if (node->hj_HashTable)
+	// CSI3130:
+	if (node->hj_Inner_HashTable)
 	{
-		ExecHashTableDestroy(node->hj_HashTable);
-		node->hj_HashTable = NULL;
+		ExecHashTableDestroy(node->hj_Inner_HashTable);
+		node->hj_Inner_HashTable = NULL;
 	}
 
 	/*
@@ -526,7 +534,7 @@ ExecEndHashJoin(HashJoinState *node)
 	ExecClearTuple(node->js.ps.ps_ResultTupleSlot);
 	ExecClearTuple(node->hj_OuterTupleSlot);
 	// CSI3530 and CSI3130 ...
-	ExecClearTuple(node->hj_HashTupleSlot); 
+	ExecClearTuple(node->hj_InnerHashTupleSlot); 
 
 	/*
 	 * clean up subtrees
@@ -551,7 +559,8 @@ ExecHashJoinOuterGetTuple(PlanState *outerNode,
 						  HashJoinState *hjstate,
 						  uint32 *hashvalue)
 {
-	HashJoinTable hashtable = hjstate->hj_HashTable;
+	// CSI3130:
+	HashJoinTable hashtable = hjstate->hj_Inner_HashTable;
 	int			curbatch = hashtable->curbatch;
 	TupleTableSlot *slot;
 
@@ -621,7 +630,8 @@ ExecHashJoinOuterGetTuple(PlanState *outerNode,
 static int
 ExecHashJoinNewBatch(HashJoinState *hjstate)
 {
-	HashJoinTable hashtable = hjstate->hj_HashTable;
+	// CSI3130:
+	HashJoinTable hashtable = hjstate->hj_Inner_HashTable;
 	int			nbatch;
 	int			curbatch;
 	BufFile    *innerFile;
@@ -703,10 +713,11 @@ start_over:
 					(errcode_for_file_access(),
 				   errmsg("could not rewind hash-join temporary file: %m")));
 
+		// CSI3130:
 		while ((slot = ExecHashJoinGetSavedTuple(hjstate,
 												 innerFile,
 												 &hashvalue,
-												 hjstate->hj_HashTupleSlot)))
+												 hjstate->hj_InnerHashTupleSlot)))
 		{
 			/*
 			 * NOTE: some tuples may be sent to future batches.  Also, it is
@@ -840,9 +851,10 @@ ExecReScanHashJoin(HashJoinState *node, ExprContext *exprCtxt)
 	 * inner subnode, then we can just re-use the existing hash table without
 	 * rebuilding it.
 	 */
-	if (node->hj_HashTable != NULL)
+	// CSI3130:
+	if (node->hj_Inner_HashTable != NULL)
 	{
-		if (node->hj_HashTable->nbatch == 1 &&
+		if (node->hj_Inner_HashTable->nbatch == 1 &&
 			((PlanState *) node)->righttree->chgParam == NULL)
 		{
 			/*
@@ -862,8 +874,9 @@ ExecReScanHashJoin(HashJoinState *node, ExprContext *exprCtxt)
 		else
 		{
 			/* must destroy and rebuild hash table */
-			ExecHashTableDestroy(node->hj_HashTable);
-			node->hj_HashTable = NULL;
+			// CSI3130:
+			ExecHashTableDestroy(node->hj_Inner_HashTable);
+			node->hj_Inner_HashTable = NULL;
 
 			/*
 			 * if chgParam of subnode is not null then plan will be re-scanned
@@ -875,9 +888,10 @@ ExecReScanHashJoin(HashJoinState *node, ExprContext *exprCtxt)
 	}
 
 	/* Always reset intra-tuple state */
-	node->hj_CurHashValue = 0;
-	node->hj_CurBucketNo = 0;
-	node->hj_CurTuple = NULL;
+	// CSI3130:
+	node->hj_Outer_CurHashValue = 0;
+	node->hj_Inner_CurBucketNo = 0;
+	node->hj_Inner_CurTuple = NULL;
 
 	node->js.ps.ps_OuterTupleSlot = NULL;
 	node->js.ps.ps_TupFromTlist = false;
