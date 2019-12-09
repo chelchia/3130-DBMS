@@ -764,17 +764,17 @@ ExecScanHashBucket(HashJoinState *hjstate,
 {
 	//CSI3130:
 	List	   *hjclauses = hjstate->hashclauses;
-	HashJoinTable hashtable = hjstate->hj_HashTable;
-	HashJoinTuple hashTuple = hjstate->hj_CurTuple;
-	uint32		hashvalue = hjstate->hj_CurHashValue;
+	HashJoinTable hashtable = hjstate->hj_Inner_HashTable;
+	HashJoinTuple hashTuple = hjstate->hj_Inner_CurTuple;
+	uint32		hashvalue = hjstate->hj_Outer_CurHashValue;
 
 	/*
-	 * hj_CurTuple is NULL to start scanning a new bucket, or the address of
+	 * hj_Inner_CurTuple is NULL to start scanning a new bucket, or the address of
 	 * the last tuple returned from the current bucket.
 	 */
 	// CSI3130:
 	if (hashTuple == NULL)
-		hashTuple = hashtable->buckets[hjstate->hj_CurBucketNo];
+		hashTuple = hashtable->buckets[hjstate->hj_Inner_CurBucketNo];
 	else
 		hashTuple = hashTuple->next;
 
@@ -788,7 +788,7 @@ ExecScanHashBucket(HashJoinState *hjstate,
 			/* insert hashtable's tuple into exec slot so ExecQual sees it */
 			// CSI3130:
 			inntuple = ExecStoreTuple(heapTuple,
-									  hjstate->hj_HashTupleSlot,
+									  hjstate->hj_InnerHashTupleSlot,
 									  InvalidBuffer,
 									  false);	/* do not pfree */
 			econtext->ecxt_innertuple = inntuple;
