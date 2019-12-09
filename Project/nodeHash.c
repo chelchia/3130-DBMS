@@ -842,7 +842,7 @@ ExecScanHashBucket(HashJoinState *hjstate,
 				if (ExecQual(hjclauses, econtext, false))
 				{
 					hjstate->hj_Outer_CurTuple = hashTuple;
-					return heapTuple;
+					return hashTuple;
 				}
 				hashTuple = hashTuple->next;
 			}
@@ -876,7 +876,7 @@ ExecScanHashBucket(HashJoinState *hjstate,
 
                 if (ExecQual(hjclauses, econtext, false)) {
                     hjstate->hj_InCurTuple = hashTuple;
-                    return heapTuple;
+                    return hashTuple;
                 }
                 hashTuple = hashTuple->next;
 
