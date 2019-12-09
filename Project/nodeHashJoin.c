@@ -218,8 +218,8 @@ ExecHashJoin(HashJoinState *node)
 			// CSI3130:
 			node->hj_Outer_CurHashValue = hashvalue;
 			ExecHashGetBucketAndBatch(hashtable, hashvalue,
-									  &node->hj_Inner_CurBucketNo, &batchno);
-			node->hj_Inner_CurTuple = NULL;
+									  &node->hj_CurBucketNo, &batchno);
+			node->hj_CurTuple = NULL;
 
 			/*
 			 * Now we've got an outer tuple and the corresponding hash bucket,
@@ -254,7 +254,7 @@ ExecHashJoin(HashJoinState *node)
 			 */
 			// CSI3130:
 			inntuple = ExecStoreTuple(curtuple,
-									  node->hj_InnerHashTupleSlot,
+									  node->hj_HashTupleSlot,
 									  InvalidBuffer,
 									  false);	/* don't pfree this tuple */
 			econtext->ecxt_innertuple = inntuple;
@@ -519,8 +519,8 @@ ExecEndHashJoin(HashJoinState *node)
 	// CSI3130:
 	if (node->hj_Inner_HashTable)
 	{
-		ExecHashTableDestroy(node->hj_Inner_HashTable);
-		node->hj_Inner_HashTable = NULL;
+		ExecHashTableDestroy(node->hj_HashTable);
+		node->hj_HashTable = NULL;
 	}
 
 	/*
@@ -534,7 +534,7 @@ ExecEndHashJoin(HashJoinState *node)
 	ExecClearTuple(node->js.ps.ps_ResultTupleSlot);
 	ExecClearTuple(node->hj_OuterTupleSlot);
 	// CSI3530 and CSI3130 ...
-	ExecClearTuple(node->hj_InnerHashTupleSlot); 
+	ExecClearTuple(node->hj_HashTupleSlot); 
 
 	/*
 	 * clean up subtrees
@@ -717,7 +717,7 @@ start_over:
 		while ((slot = ExecHashJoinGetSavedTuple(hjstate,
 												 innerFile,
 												 &hashvalue,
-												 hjstate->hj_InnerHashTupleSlot)))
+												 hjstate->hj_HashTupleSlot)))
 		{
 			/*
 			 * NOTE: some tuples may be sent to future batches.  Also, it is
@@ -854,7 +854,7 @@ ExecReScanHashJoin(HashJoinState *node, ExprContext *exprCtxt)
 	// CSI3130:
 	if (node->hj_Inner_HashTable != NULL)
 	{
-		if (node->hj_Inner_HashTable->nbatch == 1 &&
+		if (node->hj_HashTable->nbatch == 1 &&
 			((PlanState *) node)->righttree->chgParam == NULL)
 		{
 			/*
